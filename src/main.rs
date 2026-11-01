@@ -1,4 +1,5 @@
 use clap::Parser;
+use sha2::digest::typenum::Len;
 use std::{
     collections::HashMap,
     fs::{self, Metadata},
@@ -48,8 +49,14 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     for item in map {
-        println!("{:?}", item);
+        // println!("{:?}", item);
+        let key = item.0;
+        let len = item.1.len();
+        // for i in item[key] {}
+        println!("{}", len);
+        // println!("{}", item[key]);
     }
     println!("{:?}", folder);
+
     Ok(())
 }
