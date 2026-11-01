@@ -75,6 +75,7 @@ fn display_duplicates(folder: &PathBuf, file_hash_map: &HashMap<String, Vec<Path
                 );
             }
         }
+        println!();
     }
     if !flag {
         println!("=========No Duplicate Files Found =========");
