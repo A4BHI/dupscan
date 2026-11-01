@@ -12,6 +12,7 @@ struct Args {
     #[arg(short, long)]
     recursive: bool,
 }
+
 fn format_size(len: &u64) -> String {
     let kb = 1024.0;
     let mb = kb * 1024.0;
@@ -29,8 +30,12 @@ fn format_size(len: &u64) -> String {
         format!("{:.2} B", size)
     }
 }
+
+fn calculate_hash(files: &Vec<PathBuf>, file_hash_map: &mut HashMap<String, Vec<PathBuf>>) {}
+
 fn main() -> Result<(), std::io::Error> {
-    let mut map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
+    let mut files_map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
+    let mut file_hash_map: HashMap<String, Vec<PathBuf>> = HashMap::new();
     let args = Args::parse();
     let folder = args.path.unwrap_or_else(|| match std::env::current_dir() {
         Ok(path) => path,
@@ -49,12 +54,7 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     for (key, files) in &map {
-        // println!("{:?}", item);
-        // let key = item.0;
-        // let len = item.1.len();
-        // for i in item[key] {}
-        // println!("{}", len);
-        // println!("{}", item[key]);
+        if files.len() > 1 {}
     }
     println!("{:?}", folder);
 
