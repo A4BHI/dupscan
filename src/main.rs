@@ -1,10 +1,15 @@
 use clap::Parser;
 use sha2::digest::typenum::Len;
+use sha2::{Digest, Sha256};
+use std::fs::File;
+use std::io::Read;
+use std::str::Bytes;
 use std::{
     collections::HashMap,
     fs::{self, Metadata},
     path::{Path, PathBuf},
 };
+use std::{io, path};
 #[derive(Parser)]
 struct Args {
     path: Option<PathBuf>,
@@ -31,7 +36,19 @@ fn format_size(len: &u64) -> String {
     }
 }
 
-fn calculate_hash(files: &Vec<PathBuf>, file_hash_map: &mut HashMap<String, Vec<PathBuf>>) {}
+fn calculate_hash(
+    files: &Vec<PathBuf>,
+    file_hash_map: &mut HashMap<String, Vec<PathBuf>>,
+) -> io::Result<()> {
+    for path in files {
+        let mut file = File::open(path)?;
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer)?;
+
+        let hash = Sha256::digest(buffer);
+    }
+    Ok(())
+}
 
 fn main() -> Result<(), std::io::Error> {
     let mut files_map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
