@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::{
     collections::HashMap,
-    path::{self, PathBuf},
+    path::{Path, PathBuf},
 };
 #[derive(Parser)]
 struct Args {
@@ -19,6 +19,12 @@ fn main() {
             std::process::exit(1);
         }
     });
+
+    let open_folder = Path::read_dir(&folder).expect("Error reading the folder");
+    for entries in open_folder {
+        let ent = entries.unwrap();
+        println!("{:?}", ent);
+    }
 
     let mut map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
     println!("{:?}", folder);
