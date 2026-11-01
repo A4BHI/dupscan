@@ -11,6 +11,13 @@ struct Args {
     #[arg(short, long)]
     recursive: bool,
 }
+fn format_size(len: &u64) -> f64 {
+    let kb = 1024.0;
+    let mb = kb * 1024.0;
+    let gb = mb * 1024.0;
+
+    let size = *len as f64;
+}
 fn main() -> Result<(), std::io::Error> {
     let mut map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
     let args = Args::parse();
