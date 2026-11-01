@@ -41,8 +41,10 @@ fn main() -> Result<(), std::io::Error> {
 
     let open_folder = Path::read_dir(&folder).expect("Error reading the folder");
     for entries in open_folder {
-        let metadata = fs::metadata(entries.unwrap().path())?;
+        let path = entries.unwrap().path();
+        let metadata = fs::metadata(&path)?;
         println!("{}", metadata.len());
+        map.insert(metadata.len(), vec![path]);
     }
 
     println!("{:?}", folder);
