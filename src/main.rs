@@ -44,9 +44,12 @@ fn main() -> Result<(), std::io::Error> {
         let path = entries.unwrap().path();
         let metadata = fs::metadata(&path)?;
         println!("{}", metadata.len());
-        map.insert(metadata.len(), vec![path]);
+        map.entry(metadata.len()).or_insert(Vec::new()).push(path);
     }
 
+    for item in map {
+        println!("{:?}", item);
+    }
     println!("{:?}", folder);
     Ok(())
 }
