@@ -57,20 +57,25 @@ fn calculate_hash(
 }
 
 fn display_duplicates(folder: &PathBuf, file_hash_map: &HashMap<String, Vec<PathBuf>>) {
+    let mut flag = false;
     for (hash, files) in file_hash_map {
-        println!("====== Duplicate Files in : {:?} ======", folder);
+        println!("====== Duplicate Files Found In : {:?} ======", folder);
         println!();
         if files.len() > 1 {
+            flag = true;
             for f in files {
                 let metadata = fs::metadata(f).expect("Error reading file metadata");
-                let len = metadata.len();
-                let size = format_size(&len);
                 println!(
                     "[Filepath ==> File Size ==> Hash] : {:?} ==> {} ==> {} ",
-                    f, size, hash
+                    f,
+                    format_size(&metadata.len()),
+                    hash
                 );
             }
         }
+    }
+    if !flag {
+        println!("=========No Duplicate Files Found =========");
     }
 }
 
