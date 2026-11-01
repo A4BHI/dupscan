@@ -1,6 +1,7 @@
 use clap::Parser;
 use std::{
     collections::HashMap,
+    fs::{self, Metadata},
     path::{Path, PathBuf},
 };
 #[derive(Parser)]
@@ -10,7 +11,8 @@ struct Args {
     #[arg(short, long)]
     recursive: bool,
 }
-fn main() {
+fn main() -> Result<(), std::io::Error> {
+    let mut map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
     let args = Args::parse();
     let folder = args.path.unwrap_or_else(|| match std::env::current_dir() {
         Ok(path) => path,
@@ -22,10 +24,10 @@ fn main() {
 
     let open_folder = Path::read_dir(&folder).expect("Error reading the folder");
     for entries in open_folder {
-        let ent = entries.unwrap();
-        println!("{:?}", ent);
+        let metadata = fs::metadata(entries.unwrap().path())?;
+        println!("{}", metadata.len());
     }
 
-    let mut map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
     println!("{:?}", folder);
+    Ok(())
 }
