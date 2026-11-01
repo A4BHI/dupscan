@@ -1,6 +1,7 @@
 use clap::Parser;
+use hex;
 use sha2::digest::typenum::Len;
-use sha2::{Digest, Sha256};
+use sha2::{Digest, Sha256, digest};
 use std::fs::File;
 use std::io::Read;
 use std::str::Bytes;
@@ -9,7 +10,7 @@ use std::{
     fs::{self, Metadata},
     path::{Path, PathBuf},
 };
-use std::{io, path};
+use std::{hash, io, path};
 #[derive(Parser)]
 struct Args {
     path: Option<PathBuf>,
@@ -37,15 +38,16 @@ fn format_size(len: &u64) -> String {
 }
 
 fn calculate_hash(
-    files: &Vec<PathBuf>,
+    files: Vec<PathBuf>,
     file_hash_map: &mut HashMap<String, Vec<PathBuf>>,
 ) -> io::Result<()> {
     for path in files {
-        let mut file = File::open(path)?;
+        let mut file = File::open(&path)?;
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
-
-        let hash = Sha256::digest(buffer);
+        let hash = hex::encode(Sha256::digest(&buffer));
+        file_hash_map.entry(hash).or_insert(Vec::new()).push(path);
+        println!("{:?}", hash);
     }
     Ok(())
 }
@@ -67,11 +69,16 @@ fn main() -> Result<(), std::io::Error> {
         let path = entries.unwrap().path();
         let metadata = fs::metadata(&path)?;
         println!("{}", metadata.len());
-        map.entry(metadata.len()).or_insert(Vec::new()).push(path);
+        files_map
+            .entry(metadata.len())
+            .or_insert(Vec::new())
+            .push(path);
     }
 
-    for (key, files) in &map {
-        if files.len() > 1 {}
+    for (key, files) in &files_map {
+        if files.len() > 1 {
+            calculate_hash(*files, &mut file_hash_map);
+        }
     }
     println!("{:?}", folder);
 
