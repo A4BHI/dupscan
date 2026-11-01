@@ -38,7 +38,7 @@ fn format_size(len: &u64) -> String {
 }
 
 fn calculate_hash(
-    files: Vec<PathBuf>,
+    files: &Vec<PathBuf>,
     file_hash_map: &mut HashMap<String, Vec<PathBuf>>,
 ) -> io::Result<()> {
     for path in files {
@@ -46,7 +46,11 @@ fn calculate_hash(
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
         let hash = hex::encode(Sha256::digest(&buffer));
-        file_hash_map.entry(hash).or_insert(Vec::new()).push(path);
+
+        file_hash_map
+            .entry(hash.clone()) //used clone because without clone the hash values ownership goes to entry() and later we cant println!() hash
+            .or_insert(Vec::new())
+            .push(path.clone());
         println!("{:?}", hash);
     }
     Ok(())
@@ -77,7 +81,7 @@ fn main() -> Result<(), std::io::Error> {
 
     for (key, files) in &files_map {
         if files.len() > 1 {
-            calculate_hash(*files, &mut file_hash_map);
+            calculate_hash(files, &mut file_hash_map);
         }
     }
     println!("{:?}", folder);
