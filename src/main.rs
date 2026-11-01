@@ -1,16 +1,16 @@
 use clap::Parser;
 use hex;
-use sha2::digest::typenum::Len;
-use sha2::{Digest, Sha256, digest};
+// use sha2::digest::typenum::Len;
+use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::Read;
-use std::str::Bytes;
+// use std::str::Bytes;
+use std::io;
 use std::{
     collections::HashMap,
-    fs::{self, Metadata},
+    fs::{self},
     path::{Path, PathBuf},
 };
-use std::{hash, io, path};
 #[derive(Parser)]
 struct Args {
     path: Option<PathBuf>,
@@ -51,9 +51,27 @@ fn calculate_hash(
             .entry(hash.clone()) //used clone because without clone the hash values ownership goes to entry() and later we cant println!() hash
             .or_insert(Vec::new())
             .push(path.clone());
-        println!("{:?}", hash);
+        // println!("{:?}", hash);
     }
     Ok(())
+}
+
+fn display_duplicates(folder: &PathBuf, file_hash_map: &HashMap<String, Vec<PathBuf>>) {
+    for (hash, files) in file_hash_map {
+        println!("====== Duplicate Files in : {:?} ======", folder);
+        println!();
+        if files.len() > 1 {
+            for f in files {
+                let metadata = fs::metadata(f).expect("Error reading file metadata");
+                let len = metadata.len();
+                let size = format_size(&len);
+                println!(
+                    "[Filepath ==> File Size ==> Hash] : {:?} ==> {} ==> {} ",
+                    f, size, hash
+                );
+            }
+        }
+    }
 }
 
 fn main() -> Result<(), std::io::Error> {
@@ -72,19 +90,22 @@ fn main() -> Result<(), std::io::Error> {
     for entries in open_folder {
         let path = entries.unwrap().path();
         let metadata = fs::metadata(&path)?;
-        println!("{}", metadata.len());
+
+        // println!("{}", metadata.len());
         files_map
             .entry(metadata.len())
             .or_insert(Vec::new())
             .push(path);
     }
 
-    for (key, files) in &files_map {
+    for (_key, files) in &files_map {
         if files.len() > 1 {
-            calculate_hash(files, &mut file_hash_map);
+            let _ = calculate_hash(files, &mut file_hash_map);
         }
     }
-    println!("{:?}", folder);
+
+    display_duplicates(&folder, &file_hash_map);
+    // println!("{:?}", folder);
 
     Ok(())
 }
