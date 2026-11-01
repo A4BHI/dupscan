@@ -48,12 +48,12 @@ fn main() -> Result<(), std::io::Error> {
         map.entry(metadata.len()).or_insert(Vec::new()).push(path);
     }
 
-    for item in map {
+    for (key, files) in &map {
         // println!("{:?}", item);
-        let key = item.0;
-        let len = item.1.len();
+        // let key = item.0;
+        // let len = item.1.len();
         // for i in item[key] {}
-        println!("{}", len);
+        // println!("{}", len);
         // println!("{}", item[key]);
     }
     println!("{:?}", folder);
