@@ -17,6 +17,9 @@ struct Args {
 
     #[arg(short, long)]
     recursive: bool,
+
+    #[arg(short, long)]
+    delete: bool,
 }
 
 fn format_size(len: &u64) -> String {
@@ -82,6 +85,27 @@ fn display_duplicates(folder: &PathBuf, file_hash_map: &HashMap<String, Vec<Path
     }
 }
 
+fn delete_duplicates(file_hash_map: &HashMap<String, Vec<PathBuf>>) {
+    for (hash, files) in file_hash_map {
+        if files.len() > 1 {
+            let mut len = files.len();
+
+            for f in files {
+                while len > 1 {
+                    match fs::remove_file(f) {
+                        Ok(res) => {
+                            println!("File deleted : {:?} ", f);
+                        }
+                        Err(_err) => {}
+                    }
+                    len = len - 1;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 fn main() -> Result<(), std::io::Error> {
     let mut files_map: HashMap<u64, Vec<PathBuf>> = HashMap::new();
     let mut file_hash_map: HashMap<String, Vec<PathBuf>> = HashMap::new();
@@ -114,6 +138,9 @@ fn main() -> Result<(), std::io::Error> {
 
     display_duplicates(&folder, &file_hash_map);
     // println!("{:?}", folder);
+    if args.delete {
+        delete_duplicates(&file_hash_map);
+    }
 
     Ok(())
 }
