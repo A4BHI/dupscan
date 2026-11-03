@@ -49,6 +49,7 @@ fn calculate_hash(
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
         let hash = hex::encode(Sha256::digest(&buffer));
+        println!("Generated hash for {:?} ", path);
 
         file_hash_map
             .entry(hash.clone()) //used clone because without clone the hash values ownership goes to entry() and later we cant println!() hash
