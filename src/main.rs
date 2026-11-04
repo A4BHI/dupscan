@@ -5,6 +5,7 @@ use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::Read;
 // use std::str::Bytes;
+use rayon::prelude::*;
 use std::io;
 use std::{
     collections::HashMap,
@@ -44,18 +45,22 @@ fn calculate_hash(
     files: &Vec<PathBuf>,
     file_hash_map: &mut HashMap<String, Vec<PathBuf>>,
 ) -> io::Result<()> {
-    for path in files {
-        let mut file = File::open(&path)?;
-        let mut buffer = Vec::new();
-        file.read_to_end(&mut buffer)?;
-        let hash = hex::encode(Sha256::digest(&buffer));
-        println!("Generated hash for {:?} ", path);
-
+    let result: Vec<_> = files
+        .par_iter()
+        .map(|path| -> io::Result<(String, PathBuf)> {
+            let mut file = File::open(&path)?;
+            let mut buffer = Vec::new();
+            file.read_to_end(&mut buffer)?;
+            let hash = hex::encode(Sha256::digest(&buffer));
+            println!("Generated hash for {:?} ", path);
+            Ok((hash, path.clone()))
+        })
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    for (hash, path) in result {
         file_hash_map
-            .entry(hash.clone()) //used clone because without clone the hash values ownership goes to entry() and later we cant println!() hash
-            .or_insert(Vec::new())
-            .push(path.clone());
-        // println!("{:?}", hash);
+            .entry(hash.clone())
+            .or_insert_with(Vec::new)
+            .push(path);
     }
     Ok(())
 }
@@ -87,14 +92,14 @@ fn display_duplicates(folder: &PathBuf, file_hash_map: &HashMap<String, Vec<Path
 }
 
 fn delete_duplicates(file_hash_map: &HashMap<String, Vec<PathBuf>>) {
-    for (hash, files) in file_hash_map {
+    for (_hash, files) in file_hash_map {
         if files.len() > 1 {
             let mut len = files.len();
 
             for f in files {
                 while len > 1 {
                     match fs::remove_file(f) {
-                        Ok(res) => {
+                        Ok(_res) => {
                             println!("File deleted : {:?} ", f);
                         }
                         Err(_err) => {}
